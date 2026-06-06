@@ -9,3 +9,6 @@ __pycache__/
 .agents/
 skills-lock.json
 package-lock.json
+Prompt.md
+updateme.md
+Context.md

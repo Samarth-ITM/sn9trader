@@ -1,10 +1,13 @@
 # PROJECT: QUANTITATIVE SIGNAL AGGREGATOR FOR RETAIL EDGE
 
 ## Core Philosophy
+
 The stock/crypto market is structurally unfair. Insiders (Congress, CEOs, whales) have information advantage. Retail cannot beat them directly. But retail CAN legally track their PUBLIC FOOTPRINTS after mandatory disclosure and statistically exploit their predictable patterns.
 
 ## Goal
+
 Build an automated system that:
+
 1. Collects ALL legally public trading data from Congress, CEOs, on-chain whales, and options flow
 2. Backtests historical performance of each signal source
 3. Generates confidence-weighted composite signals
@@ -14,6 +17,7 @@ Build an automated system that:
 ## Data Sources (All Legal, All Free)
 
 ### Source 1: Congressional Trades
+
 - API: https://housestockwatcher.com/api (no key)
 - Focus: Pelosi, McConnell, Schiff, Lofgren, Sessions
 - Lag: 45 days disclosure delay
@@ -21,6 +25,7 @@ Build an automated system that:
 - Weight in composite: 0.35
 
 ### Source 2: CEO Insider Purchases
+
 - Source: SEC EDGAR Form 4 (direct filing access via https://www.sec.gov/Archives/edgar/data/)
 - CIK list: Provide static list of 100 top SP500 CEOs + Indian-origin US CEOs
 - Filter: transaction_code = 'P' (purchase), not options exercise
@@ -29,6 +34,7 @@ Build an automated system that:
 - Weight: 0.30
 
 ### Source 3: On-Chain Whale Moves
+
 - Source: Etherscan API (free tier, 5 calls/sec)
 - Wallet list: 50 predefined whale addresses (exchange hot wallets, known VC funds, large holders)
 - Monitor: ERC-20 transfers > $100k USD value
@@ -38,6 +44,7 @@ Build an automated system that:
 - Weight: 0.20
 
 ### Source 4: Options Unusual Activity
+
 - Source: NSE India option chain (https://www.nseindia.com/option-chain) for Nifty/Bank Nifty
 - Also: Use free tier of OptionChain API or scrape Barchart unusual options (US markets)
 - Detection: Open interest change >30% in 15 minutes OR premium > $500k notional
@@ -87,7 +94,7 @@ Hold: 90 days
 Risk: Medium
 Legal trail: /legal_trail/2025-06-05_AAPL.json
 System Requirements
-Debian minimal VM (already running) (access: ssh samarth@{ip addr} -> cd /sn9trader) 
+Debian minimal VM (already running) (access: ssh samarth@{ip addr} -> cd /sn9trader)
 
 Python 3.10+
 
@@ -124,3 +131,4 @@ Win rate >55%
 Max drawdown <20%
 
 No SEC inquiries (obviously)
+```
