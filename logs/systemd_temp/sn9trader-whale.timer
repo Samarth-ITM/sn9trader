@@ -1,0 +1,9 @@
+[Unit]
+Description=Sn9Trader Whale Transaction Tracker Timer
+
+[Timer]
+OnCalendar=*:0/5
+Persistent=true
+
+[Install]
+WantedBy=timers.target

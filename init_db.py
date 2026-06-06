@@ -35,9 +35,7 @@ def create_env_template():
         log.info(".env.example already exists, skipping")
         return
     content = """# Copy to .env and fill in values
-ETHERSCAN_KEY=
 ETHERSCAN_API_KEY=
-TELEGRAM_TOKEN=
 TELEGRAM_BOT_TOKEN=
 WHALE_WALLETS=
 WHALE_WALLETS_CSV=
@@ -161,7 +159,7 @@ def create_schema(conn):
 
 
 def test_etherscan():
-    api_key = get_env("ETHERSCAN_API_KEY", "ETHERSCAN_KEY")
+    api_key = get_env("ETHERSCAN_API_KEY")
     if not api_key:
         log.warning("No Etherscan API key found; skipping smoke test")
         return True

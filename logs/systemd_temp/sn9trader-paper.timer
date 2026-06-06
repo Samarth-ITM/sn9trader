@@ -1,0 +1,9 @@
+[Unit]
+Description=Sn9Trader Paper Portfolio Tracker Timer
+
+[Timer]
+OnCalendar=*-*-* 22:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

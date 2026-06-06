@@ -70,7 +70,7 @@ async def send_signal(bot, signal_dict):
 
 
 def send_signal_sync(signal_dict):
-    token = get_env("TELEGRAM_BOT_TOKEN", "TELEGRAM_TOKEN")
+    token = get_env("TELEGRAM_BOT_TOKEN")
     if not token:
         log.warning("No Telegram token")
         return
@@ -103,7 +103,7 @@ async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def run_daemon():
     load_dotenv(os.path.join(BASE_DIR, ".env"))
-    token = get_env("TELEGRAM_BOT_TOKEN", "TELEGRAM_TOKEN")
+    token = get_env("TELEGRAM_BOT_TOKEN")
     if not token:
         log.error("Set TELEGRAM_BOT_TOKEN in .env")
         return

@@ -1,5 +1,6 @@
 """On-chain whale tracker via Etherscan. Cron: */5 * * * *"""
 
+import argparse
 import logging
 import os
 import sqlite3
@@ -92,14 +93,20 @@ def fetch_token_tx(wallet, api_key):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Whale Tracker")
+    parser.add_argument("--test", type=int, default=None, help="Limit number of wallets to process")
+    args = parser.parse_args()
+
     load_dotenv(os.path.join(BASE_DIR, ".env"))
-    api_key = get_env("ETHERSCAN_API_KEY", "ETHERSCAN_KEY")
+    api_key = get_env("ETHERSCAN_API_KEY")
     wallets = load_wallets()
     if not wallets:
         log.warning("No whale wallets configured in WHALE_WALLETS / WHALE_WALLETS_CSV")
         return
+    if args.test:
+        wallets = wallets[:args.test]
     if not api_key:
-        log.error("ETHERSCAN_KEY required")
+        log.error("ETHERSCAN_API_KEY required")
         return
 
     inserted = alerts = 0

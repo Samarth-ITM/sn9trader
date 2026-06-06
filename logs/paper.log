@@ -1,0 +1,3 @@
+/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/paper_trader.py:93: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if datetime.utcnow().weekday() != 0:  # Monday
+Paper trader: opened=0 closed=0

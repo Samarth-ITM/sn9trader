@@ -249,34 +249,61 @@ python telegram_send.py
 
 Message your bot `/start` to subscribe.
 
-### 6. Install cron (production VM)
+### 6. Deployment (systemd timers)
+
+Run the deployment script (Dry Run mode prints the systemd configs):
 
 ```bash
-python setup_cron.py
-# or manually: crontab sn9trader.cron
-```
+# Verify configurations and test trackers
+./deploy.sh --dry-run
 
-Target deployment per `Context.md`: Debian VM at `/sn9trader` via SSH.
+# Run with sudo on Debian VM to install systemd services and timers
+sudo ./deploy.sh
+```
 
 ---
 
-## Cron Schedule
+## Systemd Schedule (Timers)
 
-| Schedule       | Script              | Log               |
-| -------------- | ------------------- | ----------------- |
-| `0 2 * * *`    | congress_tracker.py | logs/congress.log |
-| `0 */6 * * *`  | ceo_tracker.py      | logs/ceo.log      |
-| `*/5 * * * *`  | whale_tracker.py    | logs/whale.log    |
-| `*/15 * * * *` | options_tracker.py  | logs/options.log  |
-| `0 */6 * * *`  | signal_combiner.py  | logs/signals.log  |
-| `0 22 * * *`   | paper_trader.py     | logs/paper.log    |
+| Timer | Service | Schedule | Log |
+| -------------------------- | -------------------------- | ------------------ | ----------------- |
+| `sn9trader-congress.timer` | `sn9trader-congress.service`| Daily 02:00 | logs/congress.log |
+| `sn9trader-ceo.timer`      | `sn9trader-ceo.service`     | Every 6 hours      | logs/ceo.log      |
+| `sn9trader-whale.timer`     | `sn9trader-whale.service`    | Every 5 minutes    | logs/whale.log    |
+| `sn9trader-signal.timer`    | `sn9trader-signal.service`   | Every 6 hours      | logs/signal.log   |
+| `sn9trader-paper.timer`     | `sn9trader-paper.service`    | Daily 22:00        | logs/paper.log    |
+
+---
+
+## Backtesting & Weight Optimization
+
+### 1. Historical Backtest Simulation
+Simulate historical trades from the database over the past 2 years, calculating entry/exits, comparing against SPY, and outputting an interactive HTML report:
+
+```bash
+python backtest_engine.py --years 2
+```
+Outputs: `backtest_report.html` and database entries in `backtest_results` table.
+
+### 2. Grid-Search Weight Optimizer
+Find the weight combination (Congress, CEO, Whale) maximizing the Sharpe ratio of the composite signal portfolio:
+
+```bash
+python optimize_weights.py
+```
+Outputs: `optimal_weights.json`.
+
+**Best Weights Discovered**:
+- `congress`: 0.50
+- `ceo`: 0.20
+- `whale`: 0.30
+- `options`: 0.00 (Disabled due to dead endpoint)
 
 ---
 
 ## Signal Confidence Formula
 
-From `Context.md`:
-
+With option data active (last 7 days):
 ```python
 base_confidence = (
     congress_score * 0.35 +
@@ -284,15 +311,22 @@ base_confidence = (
     whale_score    * 0.20 +
     options_score  * 0.15
 )
-# Multi-source bonus: *= (1 + (num_sources - 1) * 0.15)
-# Threshold: >70 = trade signal, >85 = strong signal
+```
+
+Without active option data (or loaded from `optimal_weights.json`):
+```python
+base_confidence = (
+    congress_score * 0.50 +
+    ceo_score      * 0.20 +
+    whale_score    * 0.30
+)
 ```
 
 ---
 
 ## Validation Gate (Before Real Money)
 
-Per `Prompt.md` — do **not** deploy real capital until:
+Per Prompt.md — do **not** deploy real capital until:
 
 - 90 days paper trading completed
 - Paper portfolio outperforms SPY by >10%
@@ -307,12 +341,11 @@ Per `Prompt.md` — do **not** deploy real capital until:
 | ---------------------------------------------------- | ------------- | --------------------------------------------------------- |
 | `housestockwatcher.com` DNS dead                     | Confirmed     | Kadao GitHub fallback in `congress_tracker.py`            |
 | S3 mirror returns 403                                | Confirmed     | Kadao fallback                                            |
-| `congress_tracker` first run slow                    | Expected      | 2s sleep per yfinance call; hundreds of historical trades |
+| NSE Option Chain API dead (404)                      | Confirmed     | Disabled options_tracker; weights redistributed           |
 | Barchart US options is JS-rendered                   | Limited       | Placeholder row only; needs ThetaData or headless browser |
 | `WHALE_WALLETS` empty in `.env`                      | Config needed | Add 50 wallet addresses before whale tracker works        |
 | No Telegram subscribers until `/start`               | By design     | Run bot daemon, send `/start`                             |
 | `ciks.csv` has duplicate/wrong CIKs for some rows    | Review needed | User should validate CIK mappings                         |
-| `.env.example` stale if created before schema update | Minor         | Delete and re-run `init_db.py` to regenerate              |
 
 ---
 
@@ -325,9 +358,8 @@ sqlite3 trading_signals.db "SELECT COUNT(*) FROM whale_tx;"
 sqlite3 trading_signals.db "SELECT COUNT(*) FROM options_flow;"
 sqlite3 trading_signals.db "SELECT ticker, confidence, created_at FROM signals ORDER BY id DESC LIMIT 5;"
 sqlite3 trading_signals.db "SELECT * FROM paper_portfolio LIMIT 5;"
+sqlite3 trading_signals.db "SELECT * FROM backtest_results LIMIT 5;"
 ```
-
-Re-run `./run_all.sh` — duplicate rows should not increase (UNIQUE constraints on trade tables).
 
 ---
 
@@ -343,6 +375,9 @@ lxml
 numpy
 python-telegram-bot==20.7
 tweepy
+openpyxl
+tqdm
+matplotlib
 ```
 
 ---

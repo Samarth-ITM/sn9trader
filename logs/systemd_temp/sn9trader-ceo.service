@@ -1,0 +1,9 @@
+[Unit]
+Description=Sn9Trader CEO Insider Purchases Tracker
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader
+ExecStart=/bin/bash -c '/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/venv/bin/python /Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/ceo_tracker.py >> /Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/logs/ceo.log 2>&1'
+User=samarth

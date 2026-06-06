@@ -149,21 +149,58 @@ def build_legal_trail(ticker, confidence, sources, hold_days):
     return path
 
 
+def load_weights(conn):
+    weights_path = os.path.join(BASE_DIR, "optimal_weights.json")
+    if os.path.exists(weights_path):
+        try:
+            with open(weights_path, encoding="utf-8") as f:
+                w = json.load(f)
+                log.info("Loaded optimized weights: %s", w)
+                return (
+                    w.get("congress", 0.35),
+                    w.get("ceo", 0.30),
+                    w.get("whale", 0.20),
+                    w.get("options", 0.15)
+                )
+        except Exception as exc:
+            log.warning("Failed to load optimal_weights.json: %s", exc)
+
+    # Fallback to dynamic options detection
+    try:
+        cutoff = (datetime.utcnow() - timedelta(days=7)).isoformat()
+        row = conn.execute(
+            "SELECT COUNT(*) FROM options_flow WHERE detected_at >= ?",
+            (cutoff,)
+        ).fetchone()
+        has_options = row[0] > 0 if row else False
+    except Exception:
+        has_options = False
+
+    if has_options:
+        log.info("Active options data detected. Using default weights: congress=0.35, ceo=0.30, whale=0.20, options=0.15")
+        return 0.35, 0.30, 0.20, 0.15
+    else:
+        log.info("No active options data in last 7 days. Using redistributed weights: congress=0.45, ceo=0.35, whale=0.20, options=0.0")
+        return 0.45, 0.35, 0.20, 0.0
+
+
 def main():
     load_dotenv(os.path.join(BASE_DIR, ".env"))
     created = 0
     with sqlite3.connect(DB_PATH) as conn:
+        w_congress, w_ceo, w_whale, w_options = load_weights(conn)
         for ticker in get_tickers(conn):
             c_s, c_src = congress_score(conn, ticker)
             e_s, e_src = ceo_score(conn, ticker)
             w_s, w_src = whale_score(conn, ticker)
             o_s, o_src = options_score(conn, ticker)
-            sources = c_src + e_src + w_src + o_src
-            num_sources = sum(1 for s in (c_s, e_s, w_s, o_s) if s > 0)
+            
+            sources = c_src + e_src + w_src + (o_src if w_options > 0 else [])
+            num_sources = sum(1 for s, w in zip((c_s, e_s, w_s, o_s), (w_congress, w_ceo, w_whale, w_options)) if s > 0 and w > 0)
             if num_sources == 0:
                 continue
 
-            base = c_s * 0.35 + e_s * 0.30 + w_s * 0.20 + o_s * 0.15
+            base = c_s * w_congress + e_s * w_ceo + w_s * w_whale + o_s * w_options
             if num_sources > 1:
                 base *= 1 + (num_sources - 1) * 0.15
             confidence = min(100, base * 100)

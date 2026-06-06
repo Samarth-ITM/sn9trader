@@ -7,3 +7,6 @@ lxml
 numpy
 python-telegram-bot==20.7
 tweepy
+openpyxl
+tqdm
+matplotlib

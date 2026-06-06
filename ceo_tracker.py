@@ -1,5 +1,6 @@
 """CEO Form 4 insider purchase tracker. Cron: 0 */6 * * *"""
 
+import argparse
 import csv
 import logging
 import os
@@ -16,7 +17,7 @@ from dotenv import load_dotenv
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "trading_signals.db")
 CIKS_PATH = os.path.join(BASE_DIR, "ciks.csv")
-HEADERS = {"User-Agent": "Mozilla/5.0 (commercial research)"}
+HEADERS = {"User-Agent": "sn9trader samarth@example.com"}
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
@@ -45,6 +46,23 @@ def parse_form4_links(html):
         if href.endswith(".xml") or "-index.htm" in href:
             links.append("https://www.sec.gov" + href if href.startswith("/") else href)
     return links[:5]
+
+
+def get_xml_url_from_index(index_url):
+    try:
+        resp = requests.get(index_url, headers=HEADERS, timeout=30)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+        for a in soup.find_all("a", href=True):
+            href = a["href"]
+            if href.endswith(".xml") and "xsl" not in href.lower():
+                return "https://www.sec.gov" + href if href.startswith("/") else href
+    except Exception as exc:
+        log.warning("Failed to parse index page %s: %s", index_url, exc)
+    
+    # Fallback
+    base = index_url.rsplit("/", 1)[0]
+    return f"{base}/form4.xml"
 
 
 def parse_purchases(xml_text, name, ticker, cik):
@@ -163,11 +181,17 @@ def update_win_rates(conn):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="CEO Tracker")
+    parser.add_argument("--test", type=int, default=None, help="Limit number of CIKs to process")
+    args = parser.parse_args()
+
     load_dotenv(os.path.join(BASE_DIR, ".env"))
     if not os.path.exists(DB_PATH):
         log.error("Run init_db.py first")
         return
     ciks = load_ciks()
+    if args.test:
+        ciks = ciks[:args.test]
     total_new = 0
     with sqlite3.connect(DB_PATH) as conn:
         for row in ciks:
@@ -175,9 +199,16 @@ def main():
             try:
                 html = fetch_filings(cik)
                 time.sleep(0.5)
-                for link in parse_form4_links(html):
-                    if link.endswith(".xml"):
-                        xml = requests.get(link, headers=HEADERS, timeout=30).text
+                links = parse_form4_links(html)
+                if args.test:
+                    links = links[:2]
+                for link in links:
+                    xml_url = link
+                    if "-index.htm" in link:
+                        xml_url = get_xml_url_from_index(link)
+                        time.sleep(0.5)
+                    if xml_url and xml_url.endswith(".xml"):
+                        xml = requests.get(xml_url, headers=HEADERS, timeout=30).text
                         trades = parse_purchases(
                             xml, row["name"], row["ticker"].upper(), cik
                         )

@@ -1,0 +1,39 @@
+2026-06-05 17:36:22,257 WARNING: API fetch attempt 1 failed: HTTPSConnectionPool(host='housestockwatcher.com', port=443): Max retries exceeded with url: /api/latest_trades (Caused by NameResolutionError("HTTPSConnection(host='housestockwatcher.com', port=443): Failed to resolve 'housestockwatcher.com' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-06-05 17:36:24,266 WARNING: API fetch attempt 2 failed: HTTPSConnectionPool(host='housestockwatcher.com', port=443): Max retries exceeded with url: /api/latest_trades (Caused by NameResolutionError("HTTPSConnection(host='housestockwatcher.com', port=443): Failed to resolve 'housestockwatcher.com' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-06-05 17:36:24,266 INFO: Fetched 0 trades from API
+2026-06-05 17:36:24,267 WARNING: Wikipedia SP500 fetch failed (`Import lxml` failed.  Use pip or conda to install the lxml package.), using yfinance fallback
+2026-06-05 17:36:24,267 ERROR: Could not load SP500 ticker list
+2026-06-05 17:37:35,220 WARNING: Fetch failed (https://housestockwatcher.com/api/latest_trades) attempt 1: HTTPSConnectionPool(host='housestockwatcher.com', port=443): Max retries exceeded with url: /api/latest_trades (Caused by NameResolutionError("HTTPSConnection(host='housestockwatcher.com', port=443): Failed to resolve 'housestockwatcher.com' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-06-05 17:37:37,230 WARNING: Fetch failed (https://housestockwatcher.com/api/latest_trades) attempt 2: HTTPSConnectionPool(host='housestockwatcher.com', port=443): Max retries exceeded with url: /api/latest_trades (Caused by NameResolutionError("HTTPSConnection(host='housestockwatcher.com', port=443): Failed to resolve 'housestockwatcher.com' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-06-05 17:37:38,074 WARNING: Fetch failed (https://house-stock-watcher-data.s3-us-west-2.amazonaws.com/data/all_transactions.json) attempt 1: 403 Client Error: Forbidden for url: https://house-stock-watcher-data.s3-us-west-2.amazonaws.com/data/all_transactions.json
+2026-06-07 01:23:56,796 INFO: Fetching congressional trades via parallelized Kadao GitHub source...
+2026-06-07 01:23:56,902 INFO: Loaded 2385 trades from Kadao
+2026-06-07 01:23:56,902 INFO: Fetched 2385 trades total
+2026-06-07 01:23:57,163 INFO: Loaded and cached 503 SP500 tickers from GitHub CSV
+2026-06-07 01:23:57,183 INFO: Test limit of 10 trades reached
+2026-06-07 01:23:57,185 INFO: Batch downloading price history for 2 tickers from 2024-03-11 to 2026-06-08
+2026-06-07 01:24:02,227 INFO: Fetching congressional trades via parallelized Kadao GitHub source...
+2026-06-07 01:24:02,422 INFO: Loaded 2385 trades from Kadao
+2026-06-07 01:24:02,422 INFO: Fetched 2385 trades total
+2026-06-07 01:24:02,422 INFO: Loaded 503 SP500 tickers from cache
+2026-06-07 01:24:02,453 INFO: Batch downloading price history for 246 tickers from 2014-10-28 to 2026-06-08
+2026-06-07 01:24:18,685 ERROR: $DHR: possibly delisted; no price data found  (1d 2014-10-28 -> 2026-06-08)
+2026-06-07 01:24:18,688 ERROR: 
+1 Failed download:
+2026-06-07 01:24:18,689 ERROR: ['DHR']: possibly delisted; no price data found  (1d 2014-10-28 -> 2026-06-08)
+2026-06-07 01:24:32,504 INFO: Fetching congressional trades via parallelized Kadao GitHub source...
+2026-06-07 01:24:32,606 INFO: Loaded 2385 trades from Kadao
+2026-06-07 01:24:32,606 INFO: Fetched 2385 trades total
+2026-06-07 01:24:32,606 INFO: Loaded 503 SP500 tickers from cache
+2026-06-07 01:24:32,622 INFO: Test limit of 10 trades reached
+2026-06-07 01:24:32,623 INFO: Batch downloading price history for 3 tickers from 2021-07-22 to 2026-06-08
+2026-06-07 01:24:45,822 INFO: Fetching congressional trades via parallelized Kadao GitHub source...
+2026-06-07 01:24:45,959 INFO: Loaded 2385 trades from Kadao
+2026-06-07 01:24:45,959 INFO: Fetched 2385 trades total
+2026-06-07 01:24:45,959 INFO: Loaded 503 SP500 tickers from cache
+2026-06-07 01:24:45,989 INFO: Batch downloading price history for 246 tickers from 2014-10-28 to 2026-06-08
+2026-06-07 01:34:14,115 INFO: Fetching congressional trades via parallelized Kadao GitHub source...
+2026-06-07 01:34:14,758 INFO: Loaded 2385 trades from Kadao
+2026-06-07 01:34:14,758 INFO: Fetched 2385 trades total
+2026-06-07 01:34:14,760 INFO: Loaded 503 SP500 tickers from cache
+2026-06-07 01:34:14,783 INFO: Quick mode: skipping forward returns calculation

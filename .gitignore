@@ -1,11 +1,11 @@
-.env
 venv/
+*.db
+.env
+legal_trail/*.json
+paper_portfolio/
+logs/*.txt
 __pycache__/
 *.pyc
-trading_signals.db
-logs/
-legal_trail/
-paper_portfolio/
 .agents/
 skills-lock.json
 package-lock.json

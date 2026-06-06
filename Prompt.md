@@ -1,16 +1,14 @@
-You've done excellent work documenting the issues. The AI built correctly to spec, but the spec had **critical assumptions that failed** (House Stock Watcher API being alive). Let me give you a **diagnostic and remediation prompt** to fix everything.
-
----
-
 ## PROMPT: Diagnostic & Remediation
 
 Copy this entire prompt to Claude/Copilot:
 
-```markdown
+````markdown
 # CONTEXT
+
 We built sn9trader per Prompt.md, but congressional data source (housestockwatcher.com) is DEAD. S3 mirror 403s. Kadao fallback works but is slow and unvalidated. Need to fix ALL blockers.
 
 # CURRENT STATE (from user's README and issue list)
+
 1. Congress_tracker: 0 rows inserted. API dead. Kadao fallback exists but run was interrupted.
 2. SP500 ticker fetch: failed first run (pandas read_html missing lxml, yfinance.sp500() doesn't exist). Fixed in code but unverified.
 3. System Python: externally managed (macOS). venv created but not in .gitignore.
@@ -23,7 +21,9 @@ We built sn9trader per Prompt.md, but congressional data source (housestockwatch
 # REQUIRED FIXES (prioritized)
 
 ## FIX 1: Replace dead congressional API with working source (HIGHEST PRIORITY)
+
 Options (choose based on what user has access to):
+
 - A) Financial Modeling Prep API (has congressional trading endpoint) - $19/mo basic
 - B) Quiver Quantitative API (has free tier, 100 calls/day) - https://api.quiverquant.com
 - C) Continue with Kadao GitHub fallback but OPTIMIZE it (pre-load all JSON, batch process)
@@ -32,21 +32,26 @@ Options (choose based on what user has access to):
 `https://api.quiverquant.com/beta/live/congresstrading?politician=Pelosi`
 
 Implement as:
+
 ```python
 # Add to congress_tracker.py
 QUIVER_BASE = "https://api.quiverquant.com/beta/live/congresstrading"
 # Fetch for each politician individually, no API key required for basic tier
 ```
+````
 
 ## FIX 2: Optimize forward return calculation
+
 Problem: 2-second sleep between yfinance calls for hundreds of trades = 30min run.
 
 Solution:
+
 - Batch fetch using `yfinance.download(tickers, start, end, group_by='ticker')`
 - One API call per 100 tickers, not per trade
 - Add `--quick` flag for first run: skip forward returns, just insert trades. Run returns separately.
 
 ## FIX 3: Fix SP500 ticker list permanently
+
 Replace current fragile cascade with:
 
 ```python
@@ -55,12 +60,12 @@ def get_sp500_tickers():
     cache_file = Path("logs/sp500_tickers.txt")
     if cache_file.exists():
         return [l.strip() for l in cache_file.open() if l.strip()]
-    
+
     # Secondary: direct CSV from GitHub (reliable)
     url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv"
     df = pd.read_csv(url)
     tickers = df['Symbol'].tolist()
-    
+
     # Cache it
     cache_file.parent.mkdir(exist_ok=True)
     cache_file.write_text("\n".join(tickers))
@@ -70,13 +75,16 @@ def get_sp500_tickers():
 Remove Wikipedia and yfinance.sp500() entirely.
 
 ## FIX 4: Clean up variable naming
+
 In init_db.py and all trackers, standardize to:
+
 - `ETHERSCAN_API_KEY` (remove fallback confusion)
 - `TELEGRAM_BOT_TOKEN` (remove TELEGRAM_TOKEN fallback)
 
 Update .env.example to match exactly.
 
 ## FIX 5: Fix "Kelly" ambiguity
+
 Replace string matching with exact name matching:
 
 ```python
@@ -94,10 +102,13 @@ TARGET_POLITICIANS = [
 Do NOT use partial matching.
 
 ## FIX 6: Add lxml to requirements.txt
+
 Also add: `openpyxl` (pandas Excel fallback), `tqdm` (progress bars for long runs)
 
 ## FIX 7: Add .gitignore
+
 Create with:
+
 ```
 venv/
 *.db
@@ -110,7 +121,9 @@ __pycache__/
 ```
 
 ## FIX 8: Add progress bar to long-running trackers
+
 Modify congress_tracker.py to show progress when processing many trades:
+
 ```python
 from tqdm import tqdm
 for trade in tqdm(trades, desc="Processing congressional trades"):
@@ -118,14 +131,18 @@ for trade in tqdm(trades, desc="Processing congressional trades"):
 ```
 
 ## FIX 9: Add resume capability for first run
+
 If congress_tracker.py is interrupted, it should NOT re-process already-inserted trades. Add this check at start:
+
 ```python
 existing = pd.read_sql("SELECT DISTINCT transaction_date, ticker, politician FROM congress_trades", conn)
 # Skip trades already in DB
 ```
 
 ## FIX 10: Create test mode
+
 Add `--test` flag to all trackers:
+
 - `--test 10` = process only 10 records
 - Use for quick validation without waiting 30min
 
@@ -163,6 +180,7 @@ If any fail, explain why and propose alternative.
 The AI did NOT fail — the external API died. That's not the AI's fault. The code structure is solid. Now we pivot to working data sources and add optimizations.
 
 Output complete fixed code. Do not explain — just code and verification commands.
+
 ```
 
 ---
@@ -198,3 +216,4 @@ I will then give you the **next phase** prompts for:
 - Deployment to Debian VM with proper process management (systemd vs cron)
 
 You're 80% there. The API death is a setback, not a failure. Keep going.
+```

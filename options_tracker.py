@@ -1,5 +1,6 @@
 """NSE + US options unusual activity. Cron: */15 * * * *"""
 
+import argparse
 import json
 import logging
 import os
@@ -50,7 +51,7 @@ def save_snapshot(conn, ticker, strike, expiry, opt_type, oi):
     )
 
 
-def scan_nse(conn):
+def scan_nse(conn, test_limit=None):
     flagged = 0
     try:
         s = nse_session()
@@ -58,6 +59,8 @@ def scan_nse(conn):
         resp.raise_for_status()
         data = resp.json()
         records = data.get("records", {}).get("data", [])
+        if test_limit:
+            records = records[:test_limit]
         for rec in records:
             expiry = rec.get("expiryDate", "")
             strike = float(rec.get("strikePrice", 0))
@@ -110,12 +113,16 @@ def scan_barchart(conn):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Options Tracker")
+    parser.add_argument("--test", type=int, default=None, help="Limit number of NSE records to scan")
+    args = parser.parse_args()
+
     load_dotenv(os.path.join(BASE_DIR, ".env"))
     if not os.path.exists(DB_PATH):
         log.error("Run init_db.py first")
         return
     with sqlite3.connect(DB_PATH) as conn:
-        n = scan_nse(conn)
+        n = scan_nse(conn, test_limit=args.test)
         u = scan_barchart(conn)
         conn.commit()
     print(f"Options tracker: {n} NSE flags, {u} US flags")
