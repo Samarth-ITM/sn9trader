@@ -9,6 +9,9 @@ __pycache__/
 .agents/
 skills-lock.json
 package-lock.json
-Prompt.md
+prompt.md
 updateme.md
-Context.md
+context.md
+trading_signals.db.bak
+*.db.bak
+*.cron
