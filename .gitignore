@@ -6,3 +6,6 @@ trading_signals.db
 logs/
 legal_trail/
 paper_portfolio/
+.agents/
+skills-lock.json
+package-lock.json
