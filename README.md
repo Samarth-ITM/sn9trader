@@ -8,8 +8,8 @@ Spec sources: [`Context.md`](Context.md) (architecture & schema), [`Prompt.md`](
 
 ## Changelog
 
-| Date | Change |
-|------|--------|
+| Date       | Change                                                                                                                   |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------ |
 | 2026-06-05 | **Initial build** — All Prompt.md scripts (1–10) implemented, DB schema, cron, `run_all.sh`, venv setup. README created. |
 
 > **Maintenance rule:** Update this changelog and relevant README sections after every major change (new tracker, schema migration, API swap, deployment change).
@@ -21,6 +21,7 @@ Spec sources: [`Context.md`](Context.md) (architecture & schema), [`Prompt.md`](
 Implementation follows [`Prompt.md`](Prompt.md) execution order. Each prompt maps to one primary script.
 
 ### PROMPT 1 — `init_db.py`
+
 - Creates SQLite database `trading_signals.db` with full schema (see [Database Schema](#database-schema)).
 - Creates project folders: `legal_trail/`, `logs/`, `paper_portfolio/`.
 - Writes `.env.example` template (skipped if file already exists).
@@ -29,6 +30,7 @@ Implementation follows [`Prompt.md`](Prompt.md) execution order. Each prompt map
 - Constraints: functions only, no classes, under 150 lines.
 
 ### PROMPT 2 — `congress_tracker.py`
+
 - Fetches congressional trades from House Stock Watcher API.
 - **Fallback chain** (primary API is currently offline):
   1. `https://housestockwatcher.com/api/latest_trades`
@@ -41,6 +43,7 @@ Implementation follows [`Prompt.md`](Prompt.md) execution order. Each prompt map
 - Logs to `logs/congress.log`. Cron: daily 02:00 IST.
 
 ### PROMPT 3 — `ceo_tracker.py` + `ciks.csv`
+
 - Loads CEO list from `ciks.csv` (`name,cik,ticker`) — 50 entries for top S&P 500 CEOs.
 - Scrapes SEC EDGAR Form 4 index per CIK (`browse-edgar?type=4`).
 - Parses XML/HTML with BeautifulSoup for `transactionCode = P` (open-market purchases).
@@ -48,6 +51,7 @@ Implementation follows [`Prompt.md`](Prompt.md) execution order. Each prompt map
 - Rate limit: `time.sleep(0.5)` between SEC requests. Cron: every 6 hours.
 
 ### PROMPT 4 — `whale_tracker.py`
+
 - Loads wallet addresses from `WHALE_WALLETS` (comma-separated) or `WHALE_WALLETS_CSV` file path.
 - Polls Etherscan `tokentx` per wallet (last 100 txs).
 - USD value via CoinGecko token price API; keeps txs > $100k.
@@ -56,12 +60,14 @@ Implementation follows [`Prompt.md`](Prompt.md) execution order. Each prompt map
 - Dedup via `whale_state` table (`last_ts_{wallet}`). Cron: every 5 minutes.
 
 ### PROMPT 5 — `options_tracker.py`
+
 - **NSE:** session cookie from homepage, then `option-chain-indices?symbol=NIFTY`.
 - Compares OI vs `options_oi_snapshot`; flags >30% change as unusual.
 - **US:** Barchart unusual-options placeholder scrape (JS-rendered site — limited without browser).
 - Stores `options_flow` with `sentiment` (bullish/bearish). Cron: every 15 minutes.
 
 ### PROMPT 6 — `signal_combiner.py`
+
 - Reads all sources from last 24h (DB queries).
 - Per-ticker scores:
   - `congress_score` = avg win_rate × multiplier
@@ -74,6 +80,7 @@ Implementation follows [`Prompt.md`](Prompt.md) execution order. Each prompt map
 - Cron: every 6 hours (00:00, 06:00, 12:00, 18:00 IST).
 
 ### PROMPT 7 — `telegram_send.py`
+
 - Loads `TELEGRAM_BOT_TOKEN` or `TELEGRAM_TOKEN` from `.env`.
 - `send_signal_sync(signal_dict)` — callable from combiner/paper trader.
 - HTML message format per `Context.md`; inline keyboard "Legal Trail" button; attaches JSON file.
@@ -81,18 +88,21 @@ Implementation follows [`Prompt.md`](Prompt.md) execution order. Each prompt map
 - Daemon mode: `python telegram_send.py` (python-telegram-bot v20 polling).
 
 ### PROMPT 8 — `paper_trader.py`
+
 - Opens positions for signals where `paper_status IS NULL` ($10k fixed, 0.1% buy slippage).
 - Closes when `suggested_hold` days elapsed (0.1% sell slippage), records P&L.
 - Weekly Monday report: total return, Sharpe (risk-free 5%), max drawdown, vs SPY.
 - Sends report via Telegram. Cron: daily 22:00 IST.
 
 ### PROMPT 9 — `setup_cron.py`
+
 - Generates `sn9trader.cron` with absolute paths to venv Python.
 - Creates executable `run_all.sh` (runs all trackers once for testing).
 - Marks all `.py` scripts executable.
 - Attempts `crontab` install with `# sn9trader` marker.
 
 ### PROMPT 10 — `social_tracker.py` (optional)
+
 - READ-ONLY tweepy v2 monitor; no auto-post.
 - Logs `$TICKER` mentions from `TWITTER_USER_IDS` into `social_accuracy`.
 - Scores accuracy after 7 days via `yfinance`.
@@ -172,18 +182,18 @@ sn9trader/
 
 ## Database Schema
 
-| Table | Purpose |
-|-------|---------|
-| `congress_trades` | Politician trades + forward_return_90d/180d + win_rate |
-| `ceo_trades` | Form 4 purchases + forward_return_12m + win_rate |
-| `whale_tx` | On-chain transfers >$100k + direction + alert_flag |
-| `whale_state` | Per-wallet last timestamp for dedup |
-| `options_flow` | Unusual OI activity + sentiment |
-| `options_oi_snapshot` | Previous OI poll for delta detection |
-| `signals` | Combined signals + legal_trail_path + paper_status |
-| `paper_portfolio` | Simulated entries/exits and P&L |
-| `subscribers` | Telegram chat_ids |
-| `social_accuracy` | Tweet ticker mentions + 7d accuracy score |
+| Table                 | Purpose                                                |
+| --------------------- | ------------------------------------------------------ |
+| `congress_trades`     | Politician trades + forward_return_90d/180d + win_rate |
+| `ceo_trades`          | Form 4 purchases + forward_return_12m + win_rate       |
+| `whale_tx`            | On-chain transfers >$100k + direction + alert_flag     |
+| `whale_state`         | Per-wallet last timestamp for dedup                    |
+| `options_flow`        | Unusual OI activity + sentiment                        |
+| `options_oi_snapshot` | Previous OI poll for delta detection                   |
+| `signals`             | Combined signals + legal_trail_path + paper_status     |
+| `paper_portfolio`     | Simulated entries/exits and P&L                        |
+| `subscribers`         | Telegram chat_ids                                      |
+| `social_accuracy`     | Tweet ticker mentions + 7d accuracy score              |
 
 ---
 
@@ -208,15 +218,15 @@ Copy and fill `.env`:
 cp .env.example .env
 ```
 
-| Variable | Used by | Notes |
-|----------|---------|-------|
-| `ETHERSCAN_API_KEY` / `ETHERSCAN_KEY` | init_db, whale_tracker | Etherscan free tier |
-| `TELEGRAM_BOT_TOKEN` / `TELEGRAM_TOKEN` | telegram_send, combiner | From @BotFather |
-| `WHALE_WALLETS` | whale_tracker | Comma-separated addresses |
-| `WHALE_WALLETS_CSV` | whale_tracker | Optional file path override |
-| `TWITTER_BEARER_TOKEN` | social_tracker | X API v2 bearer |
-| `TWITTER_USER_IDS` | social_tracker | Comma-separated user IDs |
-| `THETADATA_USER` / `THETADATA_PASS` | options_tracker | Reserved for ThetaData tier |
+| Variable                                | Used by                 | Notes                       |
+| --------------------------------------- | ----------------------- | --------------------------- |
+| `ETHERSCAN_API_KEY` / `ETHERSCAN_KEY`   | init_db, whale_tracker  | Etherscan free tier         |
+| `TELEGRAM_BOT_TOKEN` / `TELEGRAM_TOKEN` | telegram_send, combiner | From @BotFather             |
+| `WHALE_WALLETS`                         | whale_tracker           | Comma-separated addresses   |
+| `WHALE_WALLETS_CSV`                     | whale_tracker           | Optional file path override |
+| `TWITTER_BEARER_TOKEN`                  | social_tracker          | X API v2 bearer             |
+| `TWITTER_USER_IDS`                      | social_tracker          | Comma-separated user IDs    |
+| `THETADATA_USER` / `THETADATA_PASS`     | options_tracker         | Reserved for ThetaData tier |
 
 ### 3. Initialize database
 
@@ -252,14 +262,14 @@ Target deployment per `Context.md`: Debian VM at `/sn9trader` via SSH.
 
 ## Cron Schedule
 
-| Schedule | Script | Log |
-|----------|--------|-----|
-| `0 2 * * *` | congress_tracker.py | logs/congress.log |
-| `0 */6 * * *` | ceo_tracker.py | logs/ceo.log |
-| `*/5 * * * *` | whale_tracker.py | logs/whale.log |
-| `*/15 * * * *` | options_tracker.py | logs/options.log |
-| `0 */6 * * *` | signal_combiner.py | logs/signals.log |
-| `0 22 * * *` | paper_trader.py | logs/paper.log |
+| Schedule       | Script              | Log               |
+| -------------- | ------------------- | ----------------- |
+| `0 2 * * *`    | congress_tracker.py | logs/congress.log |
+| `0 */6 * * *`  | ceo_tracker.py      | logs/ceo.log      |
+| `*/5 * * * *`  | whale_tracker.py    | logs/whale.log    |
+| `*/15 * * * *` | options_tracker.py  | logs/options.log  |
+| `0 */6 * * *`  | signal_combiner.py  | logs/signals.log  |
+| `0 22 * * *`   | paper_trader.py     | logs/paper.log    |
 
 ---
 
@@ -293,16 +303,16 @@ Per `Prompt.md` — do **not** deploy real capital until:
 
 ## Known Issues & Limitations
 
-| Issue | Status | Workaround |
-|-------|--------|------------|
-| `housestockwatcher.com` DNS dead | Confirmed | Kadao GitHub fallback in `congress_tracker.py` |
-| S3 mirror returns 403 | Confirmed | Kadao fallback |
-| `congress_tracker` first run slow | Expected | 2s sleep per yfinance call; hundreds of historical trades |
-| Barchart US options is JS-rendered | Limited | Placeholder row only; needs ThetaData or headless browser |
-| `WHALE_WALLETS` empty in `.env` | Config needed | Add 50 wallet addresses before whale tracker works |
-| No Telegram subscribers until `/start` | By design | Run bot daemon, send `/start` |
-| `ciks.csv` has duplicate/wrong CIKs for some rows | Review needed | User should validate CIK mappings |
-| `.env.example` stale if created before schema update | Minor | Delete and re-run `init_db.py` to regenerate |
+| Issue                                                | Status        | Workaround                                                |
+| ---------------------------------------------------- | ------------- | --------------------------------------------------------- |
+| `housestockwatcher.com` DNS dead                     | Confirmed     | Kadao GitHub fallback in `congress_tracker.py`            |
+| S3 mirror returns 403                                | Confirmed     | Kadao fallback                                            |
+| `congress_tracker` first run slow                    | Expected      | 2s sleep per yfinance call; hundreds of historical trades |
+| Barchart US options is JS-rendered                   | Limited       | Placeholder row only; needs ThetaData or headless browser |
+| `WHALE_WALLETS` empty in `.env`                      | Config needed | Add 50 wallet addresses before whale tracker works        |
+| No Telegram subscribers until `/start`               | By design     | Run bot daemon, send `/start`                             |
+| `ciks.csv` has duplicate/wrong CIKs for some rows    | Review needed | User should validate CIK mappings                         |
+| `.env.example` stale if created before schema update | Minor         | Delete and re-run `init_db.py` to regenerate              |
 
 ---
 
@@ -340,4 +350,5 @@ tweepy
 ## License & Compliance
 
 All data sources are legally public (STOCK Act disclosures, SEC EDGAR, on-chain public ledgers, exchange-published option chains). Every signal above threshold generates a JSON legal trail in `legal_trail/`. Social tracker is read-only; never auto-trades on social signals alone.
+
 # sn9trader
