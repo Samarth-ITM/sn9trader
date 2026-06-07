@@ -37,3 +37,20 @@
 2026-06-07 01:34:14,758 INFO: Fetched 2385 trades total
 2026-06-07 01:34:14,760 INFO: Loaded 503 SP500 tickers from cache
 2026-06-07 01:34:14,783 INFO: Quick mode: skipping forward returns calculation
+2026-06-07 02:24:52,352 INFO: Fetching congressional trades via parallelized Kadao GitHub source...
+2026-06-07 02:24:52,994 INFO: Loaded 2385 trades from Kadao
+2026-06-07 02:24:52,994 INFO: Fetched 2385 trades total
+2026-06-07 02:24:52,995 INFO: Loaded 503 SP500 tickers from cache
+2026-06-07 02:24:53,019 INFO: Test limit of 10 trades reached
+2026-06-07 02:24:53,021 INFO: Batch downloading price history for 3 tickers from 2021-07-22 to 2026-06-08
+2026-06-07 02:25:50,753 INFO: Fetching congressional trades via parallelized Kadao GitHub source...
+2026-06-07 02:25:50,938 INFO: Loaded 2385 trades from Kadao
+2026-06-07 02:25:50,938 INFO: Fetched 2385 trades total
+2026-06-07 02:25:50,939 INFO: Loaded 503 SP500 tickers from cache
+2026-06-07 02:25:51,010 INFO: Batch downloading price history for 246 tickers from 2014-10-28 to 2026-06-08
+2026-06-07 02:27:43,324 INFO: Fetching congressional trades via parallelized Kadao GitHub source...
+2026-06-07 02:27:43,458 INFO: Loaded 2385 trades from Kadao
+2026-06-07 02:27:43,458 INFO: Fetched 2385 trades total
+2026-06-07 02:27:43,459 INFO: Loaded 503 SP500 tickers from cache
+2026-06-07 02:27:43,478 INFO: Test limit of 10 trades reached
+2026-06-07 02:27:43,480 INFO: Batch downloading price history for 3 tickers from 2021-07-22 to 2026-06-08

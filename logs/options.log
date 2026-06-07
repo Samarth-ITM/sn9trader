@@ -13,3 +13,63 @@ Options tracker: 0 NSE flags, 1 US flags
   datetime.utcnow().isoformat(), "bullish"),
 2026-06-07 02:00:03,190 INFO: Barchart US unusual activity placeholder logged
 Options tracker: 0 NSE flags, 1 US flags
+2026-06-07 02:15:02,654 WARNING: NSE scan failed: 404 Client Error: Not Found for url: https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY
+/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/options_tracker.py:106: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  datetime.utcnow().isoformat(), "bullish"),
+2026-06-07 02:15:03,314 INFO: Barchart US unusual activity placeholder logged
+Options tracker: 0 NSE flags, 1 US flags
+2026-06-07 02:30:02,475 WARNING: NSE scan failed: 404 Client Error: Not Found for url: https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY
+/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/options_tracker.py:106: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  datetime.utcnow().isoformat(), "bullish"),
+2026-06-07 02:30:03,519 INFO: Barchart US unusual activity placeholder logged
+Options tracker: 0 NSE flags, 1 US flags
+2026-06-07 02:45:01,731 WARNING: NSE scan failed: 404 Client Error: Not Found for url: https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY
+/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/options_tracker.py:106: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  datetime.utcnow().isoformat(), "bullish"),
+2026-06-07 02:45:02,759 INFO: Barchart US unusual activity placeholder logged
+Options tracker: 0 NSE flags, 1 US flags
+2026-06-07 03:00:01,990 WARNING: NSE scan failed: 404 Client Error: Not Found for url: https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY
+/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/options_tracker.py:106: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  datetime.utcnow().isoformat(), "bullish"),
+2026-06-07 03:00:02,864 INFO: Barchart US unusual activity placeholder logged
+Options tracker: 0 NSE flags, 1 US flags
+2026-06-07 03:15:02,379 WARNING: NSE scan failed: 404 Client Error: Not Found for url: https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY
+/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/options_tracker.py:106: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  datetime.utcnow().isoformat(), "bullish"),
+2026-06-07 03:15:03,109 INFO: Barchart US unusual activity placeholder logged
+Options tracker: 0 NSE flags, 1 US flags
+2026-06-07 03:30:02,509 WARNING: NSE scan failed: 404 Client Error: Not Found for url: https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY
+/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/options_tracker.py:106: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  datetime.utcnow().isoformat(), "bullish"),
+2026-06-07 03:30:03,279 INFO: Barchart US unusual activity placeholder logged
+Options tracker: 0 NSE flags, 1 US flags
+2026-06-07 04:05:46,512 WARNING: NSE scan failed: 404 Client Error: Not Found for url: https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY
+/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/options_tracker.py:106: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  datetime.utcnow().isoformat(), "bullish"),
+2026-06-07 04:05:47,255 INFO: Barchart US unusual activity placeholder logged
+Options tracker: 0 NSE flags, 1 US flags
+2026-06-07 04:15:01,625 WARNING: NSE scan failed: 404 Client Error: Not Found for url: https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY
+/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/options_tracker.py:106: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  datetime.utcnow().isoformat(), "bullish"),
+2026-06-07 04:15:02,346 INFO: Barchart US unusual activity placeholder logged
+Options tracker: 0 NSE flags, 1 US flags
+2026-06-07 06:05:28,595 WARNING: NSE scan failed: 404 Client Error: Not Found for url: https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY
+/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/options_tracker.py:106: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  datetime.utcnow().isoformat(), "bullish"),
+2026-06-07 06:05:29,324 INFO: Barchart US unusual activity placeholder logged
+Options tracker: 0 NSE flags, 1 US flags
+2026-06-07 06:15:28,558 WARNING: NSE scan failed: 404 Client Error: Not Found for url: https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY
+/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/options_tracker.py:106: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  datetime.utcnow().isoformat(), "bullish"),
+2026-06-07 06:15:29,561 INFO: Barchart US unusual activity placeholder logged
+Options tracker: 0 NSE flags, 1 US flags
+2026-06-07 10:30:02,439 WARNING: NSE scan failed: 404 Client Error: Not Found for url: https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY
+/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/options_tracker.py:106: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  datetime.utcnow().isoformat(), "bullish"),
+2026-06-07 10:30:03,201 INFO: Barchart US unusual activity placeholder logged
+Options tracker: 0 NSE flags, 1 US flags
+2026-06-07 11:15:02,727 WARNING: NSE scan failed: 404 Client Error: Not Found for url: https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY
+/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/options_tracker.py:106: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  datetime.utcnow().isoformat(), "bullish"),
+2026-06-07 11:15:03,472 INFO: Barchart US unusual activity placeholder logged
+Options tracker: 0 NSE flags, 1 US flags

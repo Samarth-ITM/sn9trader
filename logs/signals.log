@@ -18,3 +18,9 @@ Signal combiner: 0 signals created
 /Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/signal_combiner.py:34: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
   (str(int((datetime.utcnow() - timedelta(hours=24)).timestamp())),),
 Signal combiner: 0 signals created
+2026-06-07 06:05:27,087 INFO: Loaded optimized weights: {'congress': 0.5, 'ceo': 0.2, 'whale': 0.3, 'options': 0.0}
+/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/signal_combiner.py:20: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  return (datetime.utcnow() - timedelta(hours=24)).isoformat()
+/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/signal_combiner.py:34: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  (str(int((datetime.utcnow() - timedelta(hours=24)).timestamp())),),
+Signal combiner: 0 signals created
