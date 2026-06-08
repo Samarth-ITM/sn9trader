@@ -24,3 +24,4 @@ Signal combiner: 0 signals created
 /Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/signal_combiner.py:34: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
   (str(int((datetime.utcnow() - timedelta(hours=24)).timestamp())),),
 Signal combiner: 0 signals created
+/opt/homebrew/Cellar/python@3.14/3.14.5/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/signal_combiner.py': [Errno 2] No such file or directory

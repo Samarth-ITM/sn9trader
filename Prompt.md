@@ -1,219 +1,237 @@
-## PROMPT: Diagnostic & Remediation
+markdown
 
-Copy this entire prompt to Claude/Copilot:
-
-````markdown
 # CONTEXT
 
-We built sn9trader per Prompt.md, but congressional data source (housestockwatcher.com) is DEAD. S3 mirror 403s. Kadao fallback works but is slow and unvalidated. Need to fix ALL blockers.
+You previously built sn9trader (github.com/Samarth-ITM/sn9trader). The user has discovered critical hallucinations:
 
-# CURRENT STATE (from user's README and issue list)
+- Congressional data 90 days stale
+- CEO tracker finds zero purchases
+- Whale tracker has zero wallets
+- Options tracker inserts fake dummy data
+- Sharpe ratio mathematically invalid
+- Backtest coverage incomplete
+- Weight optimizer statistically meaningless
 
-1. Congress_tracker: 0 rows inserted. API dead. Kadao fallback exists but run was interrupted.
-2. SP500 ticker fetch: failed first run (pandas read_html missing lxml, yfinance.sp500() doesn't exist). Fixed in code but unverified.
-3. System Python: externally managed (macOS). venv created but not in .gitignore.
-4. Forward returns: 2-second sleep per ticker causes 10-30min runtime. Needs optimization.
-5. Variable naming mismatch: ETHERSCAN_API_KEY vs ETHERSCAN_KEY (handled with fallback, but messy).
-6. "Kelly" filter: matches multiple politicians (Mark Kelly, Mike Kelly, Kelly Morrison).
-7. Requirements.txt missing lxml.
-8. .gitignore missing venv/.
+The user wants to ABANDON the automated trading system and build a SIMPLE, HONEST insider ranking tool for MANUAL trading.
 
-# REQUIRED FIXES (prioritized)
+# USER'S GOAL
 
-## FIX 1: Replace dead congressional API with working source (HIGHEST PRIORITY)
+"Analyse insiders and crypto whales, rank them by profitability and consistency, and use that analysis to inform my MANUAL trades. No automated trading. No fake metrics."
 
-Options (choose based on what user has access to):
+# YOUR TASK
 
-- A) Financial Modeling Prep API (has congressional trading endpoint) - $19/mo basic
-- B) Quiver Quantitative API (has free tier, 100 calls/day) - https://api.quiverquant.com
-- C) Continue with Kadao GitHub fallback but OPTIMIZE it (pre-load all JSON, batch process)
+Rewrite the sn9trader codebase to be a SIMPLE analysis tool. Follow these instructions exactly.
 
-**My recommendation:** Quiver Quantitative free tier. It's alive, documented, and has congressional trading endpoint:
-`https://api.quiverquant.com/beta/live/congresstrading?politician=Pelosi`
+## STEP 1: DELETE THESE FILES (Remove completely)
 
-Implement as:
+- backtest_engine.py
+- optimize_weights.py
+- paper_trader.py
+- options_tracker.py
+- social_tracker.py
+- setup_cron.py
+- deploy.sh
+- health_check.py
+- signal_combiner.py
 
-```python
-# Add to congress_tracker.py
-QUIVER_BASE = "https://api.quiverquant.com/beta/live/congresstrading"
-# Fetch for each politician individually, no API key required for basic tier
-```
-````
+## STEP 2: REWRITE fetch_congress.py (was congress_tracker.py)
 
-## FIX 2: Optimize forward return calculation
+**Purpose:** Fetch congressional trades from Quiver Quantitative API only.
 
-Problem: 2-second sleep between yfinance calls for hundreds of trades = 30min run.
+**Requirements:**
 
-Solution:
+- Use QUIVER_API_KEY from .env
+- Endpoint: `https://api.quiverquant.com/beta/live/congresstrading?politician={name}`
+- Track these politicians: Pelosi, McConnell, Schiff, Lofgren, Sessions, Tuberville, Kelly, Gillibrand, Warren, Hawley
+- For each trade, store: politician, ticker, transaction_date, disclosure_date, amount_range, type (purchase/sale)
+- Use yfinance batch download to get price at transaction_date
+- Calculate returns: 30d, 60d, 90d, 180d after transaction_date
+- Save to table `congress_trades`
+- Add `--test N` flag to limit rows
+- Add `--fresh` flag to only fetch last 30 days (avoid stale data)
+- Do NOT filter by S&P 500 (let user decide)
 
-- Batch fetch using `yfinance.download(tickers, start, end, group_by='ticker')`
-- One API call per 100 tickers, not per trade
-- Add `--quick` flag for first run: skip forward returns, just insert trades. Run returns separately.
+## STEP 3: REWRITE fetch_ceo.py (was ceo_tracker.py)
 
-## FIX 3: Fix SP500 ticker list permanently
+**Purpose:** Fetch CEO Form 4 purchases from SEC EDGAR.
 
-Replace current fragile cascade with:
+**Requirements:**
 
-```python
-def get_sp500_tickers():
-    # Primary: local cached CSV (create once)
-    cache_file = Path("logs/sp500_tickers.txt")
-    if cache_file.exists():
-        return [l.strip() for l in cache_file.open() if l.strip()]
+- Use CIK list from ciks.csv (keep as is)
+- Fetch Form 4 filings for each CIK
+- Parse XML for transaction_code = 'P' (purchases only, ignore sales/gifts)
+- Rate limit: sleep 1 second between requests to avoid 403
+- Store in `ceo_trades` table
+- Calculate 90d and 180d forward returns using yfinance
+- If no purchases found for a CEO, log: "CEO X: 0 purchases in last 90 days" (this is useful signal)
+- Add `--test N` flag
 
-    # Secondary: direct CSV from GitHub (reliable)
-    url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv"
-    df = pd.read_csv(url)
-    tickers = df['Symbol'].tolist()
+## STEP 4: REWRITE fetch_whales.py (was whale_tracker.py)
 
-    # Cache it
-    cache_file.parent.mkdir(exist_ok=True)
-    cache_file.write_text("\n".join(tickers))
-    return tickers
-```
+**Purpose:** Fetch crypto whale transactions from Arkham OR Etherscan API.
 
-Remove Wikipedia and yfinance.sp500() entirely.
+**Requirements:**
 
-## FIX 4: Clean up variable naming
+- Load wallet addresses from WHALE_WALLETS in .env (comma-separated)
+- If ARKHAM_API_KEY exists, use Arkham endpoint
+- Else if ETHERSCAN_API_KEY exists, use Etherscan
+- Else exit with error: "No crypto API key found"
+- For each transaction > $100k USD, store: wallet, token, amount_usd, tx_hash, timestamp, direction (exchange_to_wallet / wallet_to_exchange / wallet_to_wallet)
+- Get token price at transaction time using CoinGecko API
+- Calculate 7d and 30d forward returns
+- Add to `whale_tx` table
+- Do NOT fail silently — log all errors
+- Add `--test N` flag
 
-In init_db.py and all trackers, standardize to:
+## STEP 5: CREATE rank_insiders.py (NEW FILE)
 
-- `ETHERSCAN_API_KEY` (remove fallback confusion)
-- `TELEGRAM_BOT_TOKEN` (remove TELEGRAM_TOKEN fallback)
+**Purpose:** Query database and output ranked list of insiders/whales.
 
-Update .env.example to match exactly.
+**Requirements:**
 
-## FIX 5: Fix "Kelly" ambiguity
+For each politician in congress_trades:
 
-Replace string matching with exact name matching:
+- Calculate:
+  - total_trades
+  - win_count (return_90d > 0)
+  - win_rate = win_count / total_trades
+  - avg_return_90d = mean(return_90d)
+  - median_return_90d
+  - std_dev_return
+  - freshness = max(0, 1 - (days_since_last_trade / 90)) # 0-1 scale
+  - composite_score = (win_rate _ 0.5) + (avg_return_90d/100 _ 0.3) + (freshness \* 0.2)
 
-```python
-TARGET_POLITICIANS = [
-    "Nancy Pelosi",
-    "Mitch McConnell",
-    "Adam Schiff",
-    "Zoe Lofgren",
-    "Pete Sessions",
-    "Tommy Tuberville",
-    "Mark Kelly"  # Explicitly Mark Kelly (Senate)
-]
-```
+For each CEO:
 
-Do NOT use partial matching.
+- Same metrics as politicians
+- Additional: multiple_insider_bonus = 1.2 if >2 CEOs bought same ticker within 7 days
 
-## FIX 6: Add lxml to requirements.txt
+For each whale wallet:
 
-Also add: `openpyxl` (pandas Excel fallback), `tqdm` (progress bars for long runs)
+- win_rate_7d on token trades
+- avg_position_size_usd (weight larger trades higher)
+- exchange_flow_score = +0.2 if accumulation pattern, -0.1 if distribution pattern
 
-## FIX 7: Add .gitignore
+**Output to console:**
+========== INSIDER RANKINGS ==========
 
-Create with:
+Nancy Pelosi (Congress)
+Score: 87.2/100
+Trades: 45 | Win rate: 82% | Avg 90d return: 14.3%
+Last trade: 45 days ago
+Recent buys: NVDA (45d), AAPL (67d)
 
-```
-venv/
-*.db
-.env
-legal_trail/*.json
-paper_portfolio/
-logs/*.txt
-__pycache__/
-*.pyc
-```
+Jump Crypto (Whale)
+Score: 76.4/100
+Trades: 28 | Win rate: 71% | Avg 7d return: 22.1%
+Recent accumulation: ETH, UNI
 
-## FIX 8: Add progress bar to long-running trackers
+Tim Cook (CEO, AAPL)
+Score: 42.1/100
+Trades: 0 purchases in last 90 days
+Signal: No insider confidence (sellers only)
 
-Modify congress_tracker.py to show progress when processing many trades:
+text
 
-```python
-from tqdm import tqdm
-for trade in tqdm(trades, desc="Processing congressional trades"):
-    # process
-```
+**Output to JSON:** Save rankings to `rankings.json` with full data
 
-## FIX 9: Add resume capability for first run
+**Output to Telegram (optional):** If TELEGRAM_BOT_TOKEN set, send top 5 to subscribers
 
-If congress_tracker.py is interrupted, it should NOT re-process already-inserted trades. Add this check at start:
+## STEP 6: UPDATE init_db.py
 
-```python
-existing = pd.read_sql("SELECT DISTINCT transaction_date, ticker, politician FROM congress_trades", conn)
-# Skip trades already in DB
-```
+Simplify schema to ONLY these tables:
 
-## FIX 10: Create test mode
+```sql
+congress_trades (
+    id, politician, ticker, transaction_date, disclosure_date,
+    amount_range, type, price_at_transaction,
+    return_30d, return_60d, return_90d, return_180d
+)
 
-Add `--test` flag to all trackers:
+ceo_trades (
+    id, name, ticker, filing_date, transaction_date,
+    shares, price, cik, return_90d, return_180d
+)
 
-- `--test 10` = process only 10 records
-- Use for quick validation without waiting 30min
+whale_tx (
+    id, wallet, token, amount_usd, tx_hash, timestamp,
+    direction, price_at_tx, return_7d, return_30d
+)
 
-# DELIVERABLES
+rankings (
+    id, source_type, source_name, score, rank_date, json_data
+)
+Remove all other tables.
 
-After implementing fixes above, output:
+STEP 7: UPDATE .env.example
+text
+# Required
+QUIVER_API_KEY=your_key_here
+WHALE_WALLETS=0xab5801...,0xf939e0...
 
-1. Updated `congress_tracker.py` (with Quiver API or optimized Kadao)
-2. Updated `requirements.txt`
-3. New `fix_all.sh` script that:
-   - Deletes old DB (backup first)
-   - Runs init_db.py fresh
-   - Runs each tracker in test mode (--test 10)
-   - Runs full congress_tracker.py with progress bar
-4. Updated `.env.example` with correct variable names
-5. New `.gitignore`
-6. Verification commands to run AFTER fixes:
-   ```bash
-   sqlite3 trading_signals.db "SELECT COUNT(*) FROM congress_trades;" # Should be >100
-   sqlite3 trading_signals.db "SELECT COUNT(*) FROM ceo_trades WHERE forward_return_12m IS NOT NULL;"
-   ```
+# Optional (use one crypto API)
+ARKHAM_API_KEY=your_key_here
+ETHERSCAN_API_KEY=your_key_here
 
-# VERIFICATION BEFORE ACCEPTING
+# Optional
+TELEGRAM_BOT_TOKEN=your_token_here
+STEP 8: UPDATE README.md
+Rewrite to state clearly:
 
-Run these manual checks and report results:
+"This is an analysis tool for MANUAL trading, not automated trading"
 
-1. `curl https://api.quiverquant.com/beta/live/congresstrading?politician=Pelosi` (if using Quiver) — returns data?
-2. `python congress_tracker.py --test 5` — inserts 5 rows?
-3. `python signal_combiner.py` — generates any signals >70 confidence?
+List three working data sources and how to get API keys
 
-If any fail, explain why and propose alternative.
+Provide example of running python rank_insiders.py
 
-# FINAL NOTE
+Remove ALL references to backtesting, optimization, paper trading, options, Sharpe ratio
 
-The AI did NOT fail — the external API died. That's not the AI's fault. The code structure is solid. Now we pivot to working data sources and add optimizations.
+STEP 9: VERIFICATION REQUIREMENTS
+After rewriting, the user must be able to run:
 
-Output complete fixed code. Do not explain — just code and verification commands.
+bash
+python fetch_congress.py --test 10
+python fetch_ceo.py --test 10
+python fetch_whales.py --test 10
+python rank_insiders.py
+Each command must:
 
-```
+Complete without crashing
+
+Output meaningful logs (no silent failures)
+
+Insert data into the database
+
+rank_insiders.py must produce a console table with real numbers
+
+STEP 10: ADD DISCLAIMER
+Add this comment at the top of rank_insiders.py:
+
+python
+# DISCLAIMER: This tool analyzes public data for educational purposes.
+# Past performance does not guarantee future results.
+# This is NOT financial advice. The user makes all trading decisions manually.
+ACCEPTANCE CRITERIA
+All deleted files removed from repository
+
+No fake metrics (Sharpe, backtest win rate, weight optimization, options dummy data)
+
+rank_insiders.py outputs meaningful rankings (not all zeros)
+
+User can get a working system within 30 minutes of setting up API keys
+
+Every script has --test flag for quick validation
+
+No silent failures — all errors logged to console
+
+FINAL NOTE
+The user does NOT want automation. They want data. Build a tool that collects data and presents it clearly. Let the human be the decision-maker.
+
+text
 
 ---
 
-## What You Need To Decide
+Once you paste the prompt above, Claude will rewrite your codebase. After it's done, run the verification commands and report back what `rank_insiders.py` outputs.
 
-The critical choice is **FIX 1** — congressional data source:
-
-| Source | Cost | Reliability | Rate Limits |
-|--------|------|-------------|-------------|
-| Quiver Quantitative | Free tier (100 calls/day) | Good | 100/day |
-| Financial Modeling Prep | $19/mo | Very good | 300/day |
-| Kadao GitHub (current fallback) | Free | Moderate (manual updates) | None |
-| Senate Stock Watcher (if alive) | Free | Unknown | None |
-
-**My recommendation:** Use **Quiver free tier** as primary, Kadao as fallback. I'll adjust the prompt above accordingly.
-
----
-
-## Your Next Step
-
-1. **Decide which congressional data source you want** (Quiver free is easiest)
-2. **Feed the prompt above to Claude/Copilot** exactly as written
-3. **Run the verification commands**
-4. **Report back** with:
-   - Which source you chose
-   - The output of verification commands
-   - Any remaining errors
-
-I will then give you the **next phase** prompts for:
-- Backtesting validation
-- Optimization of confidence weights using historical data
-- Deployment to Debian VM with proper process management (systemd vs cron)
-
-You're 80% there. The API death is a setback, not a failure. Keep going.
+Then you manually validate one trade with Yahoo Finance. That's the moment you'll know if the system is honest.
 ```

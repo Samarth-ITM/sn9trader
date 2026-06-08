@@ -279,3 +279,4 @@ If you want or need to use an HTML parser on this document, you can make this wa
 2026-06-07 08:36:55,863 WARNING: Failed to parse index page https://www.sec.gov/Archives/edgar/data/764478/000122520826003976/0001225208-26-003976-index.htm: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
 2026-06-07 10:12:39,106 WARNING: Failed to parse index page https://www.sec.gov/Archives/edgar/data/1001250/000126762126000008/0001267621-26-000008-index.htm: HTTPSConnectionPool(host='www.sec.gov', port=443): Read timed out. (read timeout=30)
 CEO tracker: 3 new trades, 0 returns updated
+/opt/homebrew/Cellar/python@3.14/3.14.5/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/samarth/Downloads/Official/PROJECTS/CODES/Python/Projects/sn9trader/ceo_tracker.py': [Errno 2] No such file or directory
